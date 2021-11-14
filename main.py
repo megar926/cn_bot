@@ -3,7 +3,17 @@ import config
 import pandas as pd
 import mysql.connector
 import subprocess
+import configparser
+#pip3 install PyTelegramBotAPI
 #import pickle
+
+config_ini = configparser.ConfigParser()
+config_ini.read("/home/alex/Документы/myprojects/cn_bot/config_linux.ini")
+path_eri = config_ini["BASE_PATH"]["eri_base"]
+path_con = config_ini["BASE_PATH"]["connector_base"]
+path_upload_folder = config_ini["PROJECT_PATH"]["file_upload_folder"]
+
+bot = telebot.TeleBot(config.TOKEN)
 
 def scanBaseCn(text):
 	df = pd.DataFrame()
@@ -39,13 +49,14 @@ def scanBaseCn(text):
 	df['CN'] = cnDf
 	print(return_list)
 	return return_list, df
-bot = telebot.TeleBot(config.TOKEN)
+
 @bot.message_handler(commands=['start'])
 def welcome(message):
 	sti = open('static/sticker.webp', 'rb')
 	bot.send_sticker(message.chat.id, sti)
 	bot.send_message(message.chat.id, message.from_user)
 	bot.send_message(message.chat.id, message.chat.id)
+
 @bot.message_handler(content_types=['text'])
 def lalala(message):
 	#bot.send_message(message.chat.id, message.text)
@@ -104,7 +115,7 @@ def upload_files(message):
 	file_id_info = bot.get_file(message.document.file_id)
 	downloaded_file = bot.download_file(file_id_info.file_path)
 	tab = pd.read_excel(downloaded_file)
-	tab.to_excel(f'/home/pi/Documents/myprojects/server/bot/imbase/{message.document.file_name}', index = False)
+	tab.to_excel(f'{path_upload_folder}+{message.document.file_name}', index = False)
 	bot.send_message(message.chat.id, f'{message.document.file_name} сохранен!')
 	#pickle.dump(tab, f'/home/pi/Documents/myprojects/server/bot/imbase/{message.document.file_name.split(".")[0]}')
 	#bot.send_message(message.chat.id, f'{message.document.file_name.split(".")[0]} сохранен!')
